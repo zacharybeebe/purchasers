@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Home
+{% endblock %}
+
+{% block header2 %}
+  Welcome
+{% endblock %}
+
+
+{% block index %}
+  {% autoescape false %}
+  <h6>{{ index_prompt }}</h6>
+  {% endautoescape %}
+{% endblock %}

@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Sale{% endblock %}
+
+{% block header2 %}Add Sale{% endblock %}
+
+
+{% block add_sale %}
+<script type="text/javascript">
+    function submit_create() {
+        var form = document.getElementById("form_add_sale");
+        form.submit();
+    }
+
+    function check_new_purchaser(selection, width){
+        var value = selection.value;
+        var row = parseInt(selection.name[selection.name.length -1]) + 1;
+        if (row == 1){
+            row = row + 10;
+        }
+        if (value == "new"){
+            var thead_tr = document.getElementById("purchaser_thead_tr");
+            var th = document.createElement("th");
+            var label = create_label("New Purchaser Name", width);
+            th.appendChild(label);
+            thead_tr.appendChild(th);
+
+            var tbody_tr = document.getElementById(`purchaser_tbody_tr_${row}`)
+            var td = document.createElement("td");
+            var input = create_input(`purchaser_new_${row - 1}`, width);
+            td.appendChild(input);
+            tbody_tr.appendChild(td);
+        }
+    }
+
+    function create_table(rows, purchasers, width){
+        var table = document.createElement("table");
+        table.id = "purchaser_table";
+        table.className = "table table-striped table-sm";
+        var thead = document.createElement("thead");
+        thead.id = "purchaser_thead";
+        var tbody = document.createElement("tbody");
+        tbody.id = "purchaser_tbody";
+
+        var heads = ["Purchaser", "Bid Value"];
+        var tr = document.createElement("tr");
+        tr.id = "purchaser_thead_tr";
+        var th
+        var label
+        for (var i in heads){
+            th = document.createElement("th");
+            label = create_label(heads[i], width);
+            th.appendChild(label);
+            tr.appendChild(th);
+        }
+        thead.appendChild(tr);
+        table.appendChild(thead);
+
+        for (var j = 0; j < rows; j++){
+            tr = document.createElement("tr");
+            tr.id = `purchaser_tbody_tr_${j + 2}`;
+            var td
+            for (var k = 0; k < 2; k++){
+                td = document.createElement("td");
+                var name_id = `purchaser_name_${j + 1}`;
+                if (k == 0) {
+                    var select = create_select(purchasers, name_id, width);
+                    td.appendChild(select);
+                } else {
+                    var input = create_input(`purchaser_bid_${j + 1}`, width);
+                    td.appendChild(input);
+                }
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+        return table
+    }
+
+    function add_to_table(previous_rows, change_rows, purchasers, width){
+        var new_rows = change_rows - previous_rows;
+        var tbody = document.getElementById("purchaser_tbody");
+        for (var j = 0; j < new_rows; j++){
+            tr = document.createElement("tr");
+            tr.id = `purchaser_tbody_tr_${previous_rows + j + 2}`;
+            var td
+            for (var k = 0; k < 2; k++){
+                td = document.createElement("td");
+                var name_id = `purchaser_name_${previous_rows + j + 1}`;
+                if (k == 0) {
+                    var select = create_select(purchasers, name_id, width);
+                    td.appendChild(select);
+                } else {
+                    var input = create_input(`purchaser_bid_${previous_rows + j + 1}`, width);
+                    td.appendChild(input);
+                }
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        }
+    }
+
+    function delete_from_table(change){
+        var change_abs = Math.abs(change);
+        table = document.getElementById("purchaser_table");
+        for (var i = 0; i < change_abs; i++){
+            table.deleteRow(-1);
+        }
+    }
+
+    function create_select(purchasers, name_id, width){
+        var select = document.createElement("select");
+        select.style = `width: ${ width }; display: inline;`;
+        select.className = "form-select form-select-sm mb-3";
+        select.ariaLabel = ".form-select-lg example";
+        select.id = name_id;
+        select.name = name_id;
+        select.onchange = function() {check_new_purchaser(select, width)};
+
+        var option
+        var first = [["Purchaser", ""], ["*NEW PURCHASER*", "new"]]
+        for (var i in first){
+            option = document.createElement("option");
+            option.innerHTML = first[i][0];
+            option.value = first[i][1];
+            select.appendChild(option);
+        }
+
+        for (var i in purchasers){
+            option = document.createElement("option");
+            option.innerHTML = purchasers[i];
+            option.value = purchasers[i];
+            select.appendChild(option);
+        }
+        return select
+    }
+
+    function create_label(value, width){
+        var label = document.createElement("label");
+        label.style = `width: ${width}; text-align: left; font-weight: bold;`;
+        label.innerHTML = value;
+        return label
+    }
+
+    function create_input(name, width){
+        var input = document.createElement("input");
+        input.style = `width: ${width};`;
+        input.type = "text";
+        input.name = name;
+        return input
+    }
+
+    function add_purchasers(selection, purchasers, width) {
+        var num_purchasers = parseInt(selection.value);
+        var purchaser_div = document.getElementById("purchasers");
+
+        var table_exists = document.getElementById("purchaser_table");
+        if (!table_exists){
+            var blank_p = document.createElement("p");
+            blank_p.innerHTML = "&emsp;";
+            purchaser_div.appendChild(blank_p)
+
+            var table = create_table(num_purchasers, purchasers, width);
+            purchaser_div.appendChild(table);
+        } else {
+            var previous_rows = table_exists.rows.length - 1;
+            var change = num_purchasers - previous_rows;
+            if (change > 0){
+                add_to_table(previous_rows, num_purchasers, purchasers, width);
+            } else {
+                delete_from_table(change);
+                console.log(change)
+            }
+        }
+    }
+</script>
+
+{% if flash %}
+    <p style="color: rgba(84, 216, 226, .95);"><b>{{ flash }}</b></p>
+{% endif %}
+
+<form action="#" method="post" id="form_add_sale" enctype="multipart/form-data">
+    {% set width = '250px' %}
+    {% for key in add_sale_form %}
+        {% set label = add_sale_form[key][0] %}
+        {% set value = add_sale_form[key][1] %}
+        {% if key == 'auction' %}
+            <p>
+                <label style="width: {{ width }}; text-align: left; font-weight: bold;">{{ label }}:</label>
+                <input style="width: {{ width }};" type="date" name="{{ key }}" value="{{ value }}"/>
+            </p>
+        {% else %}
+        <p>
+            <label style="width: {{ width }}; text-align: left; font-weight: bold;">{{ label }}:</label>
+            <input style="width: {{ width }};" type="text" name="{{ key }}" value="{{ value }}"/>
+        </p>
+        {% endif %}
+    {% endfor %}
+    <div id="purchasers">
+        <p>&emsp;</p>
+        <p>
+            <label style="width: {{ width }}; text-align: left; font-weight: bold;">Number of Bidders:</label>
+            <select class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" name="num_purchasers" id="num_purchasers" style="width: {{ width }}; display: inline;" onchange="add_purchasers(this, {{ purchasers }}, '{{ width }}')">
+              <option value="">Select</option>
+              {% for i in range(1, 11) %}
+                <option value="{{ i }}">{{ i }}</option>
+              {% endfor %}
+            </select>
+        </p>
+    </div>
+    <button type="button" class="btn btn-sm btn-dark" onclick="submit()">Submit</button>
+
+</form>
+{% endblock %}

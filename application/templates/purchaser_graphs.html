@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Purchaser Graphs
+{% endblock %}
+
+{% block header2 %}
+  Purchaser Graphs
+{% endblock %}
+
+
+{% block graph %}
+  <script>
+    function check_two_words(value){
+      if (value.indexOf(' ') >= 0){
+        return value.split(" ").join("_");
+      } else {
+        return value;
+      }
+    }
+
+    function graph_figure(){
+      var purchaser = check_two_words(document.getElementById("purchaser").value);
+      var graph_val = document.getElementById("graphs").value;
+      if (graph_val != "" && purchaser != ""){
+        var split = graph_val.split("_");
+        console.log(split)
+        var graph = split[0];
+        var time = split[1];
+        var attr = split[2];
+        window.location = `/purchaser_graphs_${purchaser}_${graph}_${time}_${attr}`;
+      }
+    }
+  </script>
+  <div>
+    <select class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" name="purchaser" id="purchaser" onchange="graph_figure()">
+      {% if purchaser_name != 'None' %}
+        <option value="{{ purchaser_name }}">{{ purchaser_name }}</option>
+      {% else %}
+        <option value="">Purchasers</option>
+      {% endif %}
+      {% for purchaser in purchasers %}
+        {% if purchaser != purchaser_name %}
+          <option value="{{ purchaser }}">{{ purchaser }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+
+  <div>
+    <select class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" name="graphs" id="graphs" onchange="graph_figure()">
+      {% if graph_values[0] != "None" %}
+        <option value="{{ graph_values[1] }}_{{ graph_values[2] }}_{{ graph_values[3] }}">{{ graph_values[0] }}</option>
+      {% else %}
+        <option value="">Graphs</option>
+      {% endif %}
+      {% for button in buttons %}
+        {% if button != graph_values[0] %}
+          {% set graph, time, attr = buttons[button] %}
+          <option value="{{ graph }}_{{ time }}_{{ attr }}">{{ button }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+
+  <div id="chart1" style="width: 1200px; height: 600px;"></div>
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script>
+    if (typeof {{ fig|safe }} !== 'undefined'){
+      Plotly.plot("chart1", {{ fig|safe }});
+    }
+  </script>
+
+
+{% endblock %}
